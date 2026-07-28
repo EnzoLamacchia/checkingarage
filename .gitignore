@@ -1,2 +1,7 @@
 .~lock.*#
 .claude/
+
+# File di lavoro/dati grezzi non necessari per l'app pubblicata
+piano_rotazione_garage.html
+LISTA GARAGE.xlsx
+Piano_Rotazione_Garage_v2.xlsx
