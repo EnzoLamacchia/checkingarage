@@ -227,6 +227,28 @@
   .modal.no { background: linear-gradient(160deg, #ff2800, #a30000); }
   .modal.smart { background: linear-gradient(160deg, #8a6bff, #6a4cff); }
   .modal.neutral { background: linear-gradient(160deg, #7c8794, #5a636e); }
+  .modal.race { background: linear-gradient(160deg, #ffb020, #ff7a1a); }
+  .modal.race .icon { animation: dash 0.6s ease-in-out infinite alternate; }
+  @keyframes dash {
+    from { transform: translateX(-4px) rotate(-3deg); }
+    to { transform: translateX(4px) rotate(3deg); }
+  }
+  .modal.race .race-bar {
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.25);
+    margin: 0 0 18px 0;
+    overflow: hidden;
+    position: relative;
+  }
+  .modal.race .race-bar::after {
+    content: "";
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 60%;
+    background: #fff;
+    border-radius: 999px;
+  }
 
   .modal .icon {
     font-size: 5rem;
@@ -261,6 +283,7 @@
     opacity: 0.92;
     margin: 0 0 24px 0;
     line-height: 1.4;
+    white-space: pre-line;
   }
   .modal .close-btn {
     background: rgba(255,255,255,0.22);
@@ -309,6 +332,7 @@
       <div class="icon" id="modalIcon"></div>
       <div class="title" id="modalTitle"></div>
       <div class="modal-date" id="modalDate"></div>
+      <div class="race-bar" id="raceBar" style="display:none;"></div>
       <div class="detail" id="modalDetail"></div>
       <button class="close-btn" id="closeBtn">Chiudi</button>
     </div>
@@ -339,6 +363,7 @@
   const modalTitle = document.getElementById("modalTitle");
   const modalDate = document.getElementById("modalDate");
   const modalDetail = document.getElementById("modalDetail");
+  const raceBar = document.getElementById("raceBar");
 
   function formatDayLabel(dateStr) {
     if (!dateStr) return "";
@@ -355,6 +380,7 @@
     modalTitle.textContent = title;
     modalDate.textContent = formatDayLabel(dateStr);
     modalDetail.textContent = detail;
+    raceBar.style.display = kind === "race" ? "block" : "none";
     overlay.classList.add("open");
   }
   function closeModal() {
@@ -410,11 +436,19 @@
 
     const access = person.access[dateStr];
     if (access === "SI") {
-      showModal(
-        "si", "👍", "TRASE!",
-        `${person.nome}, ${dayFull} hai accesso al garage. Buona giornata!`,
-        dateStr
-      );
+      if (dayCode === "LUN" || dayCode === "VEN") {
+        showModal(
+          "race", "🏁", "FUSCE!!",
+          `${person.nome}, ${dayFull} l'accesso è libero ma i posti sono limitati: chi primo arriva....\nArriva presto o parcheggi fuori!`,
+          dateStr
+        );
+      } else {
+        showModal(
+          "si", "👍", "TRASE!",
+          `${person.nome}, ${dayFull} hai accesso al garage. Buona giornata!`,
+          dateStr
+        );
+      }
     } else {
       showModal(
         "no", "🖐️", "DAFFÒRE!",
