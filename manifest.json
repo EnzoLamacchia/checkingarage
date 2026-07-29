@@ -1,0 +1,14 @@
+{
+  "name": "Garage Check",
+  "short_name": "Garage Check",
+  "description": "Piano rotazione garage · scopri se oggi tocca a te",
+  "start_url": "garage_check.html",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#1c1f26",
+  "theme_color": "#1c1f26",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
