@@ -354,6 +354,8 @@
   const DAY_IT = { 1: "LUN", 2: "MAR", 3: "MER", 4: "GIO", 5: "VEN" };
   const DAY_FULL_IT = { 0: "domenica", 1: "lunedì", 2: "martedì", 3: "mercoledì", 4: "giovedì", 5: "venerdì", 6: "sabato" };
 
+  const LAST_PERSON_KEY = "garageCheck.lastPersonId";
+
   const select = document.getElementById("chiSei");
   DATA.people
     .slice()
@@ -364,6 +366,16 @@
       opt.textContent = p.nome;
       select.appendChild(opt);
     });
+
+  {
+    const lastPersonId = localStorage.getItem(LAST_PERSON_KEY);
+    if (lastPersonId && DATA.people.some(p => String(p.id) === lastPersonId)) {
+      select.value = lastPersonId;
+    }
+  }
+  select.addEventListener("change", () => {
+    if (select.value) localStorage.setItem(LAST_PERSON_KEY, select.value);
+  });
 
   const giornoInput = document.getElementById("giorno");
   const daySummary = document.getElementById("daySummary");
