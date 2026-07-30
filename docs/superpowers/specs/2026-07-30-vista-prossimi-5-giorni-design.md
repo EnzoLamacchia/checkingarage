@@ -75,6 +75,15 @@ restando dentro il modal.
 - Sotto i 380px (media query già esistente in `garage_check.html`), ridurre
   leggermente padding/gap dei quadratini per mantenere leggibilità.
 
+## Note
+
+- Mockup visivo validato con l'utente (verde/sì, viola/smart, arancio/race,
+  rosso/no, grigio/fuori periodo) confermando leggibilità del bordo anche
+  nei casi di colore coincidente tra modal e quadratino.
+- Contestualmente al mockup, il messaggio del modal `race` (FUSCE!!) è stato
+  accorciato in `garage_check.html`, rimuovendo la frase "Arriva presto o
+  parcheggi fuori!" (già applicato, indipendente da questa feature).
+
 ## Non in scope
 
 - Nessuna modifica al flusso principale "seleziona giorno + Verifica" fuori
