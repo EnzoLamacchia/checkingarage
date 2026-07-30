@@ -310,11 +310,19 @@
   }
   .modal .close-btn:active { background: rgba(255,255,255,0.32); }
 
+  .modal .day-strip-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    opacity: 0.65;
+    margin: 20px 0 10px 0;
+    text-align: left;
+  }
   .modal .day-strip {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     gap: 8px;
-    margin-top: 20px;
   }
   .modal .day-chip {
     aspect-ratio: 1 / 1;
@@ -379,6 +387,7 @@
       <div class="race-bar" id="raceBar" style="display:none;"></div>
       <div class="detail" id="modalDetail"></div>
       <button class="close-btn" id="closeBtn">Chiudi</button>
+      <div class="day-strip-label" id="dayStripLabel" style="display:none;">Prossimi giorni</div>
       <div class="day-strip" id="dayStrip" style="display:none;"></div>
     </div>
   </div>
@@ -441,8 +450,10 @@
 
     if (dateStr && person) {
       renderStrip(dateStr, person);
+      dayStripLabel.style.display = "block";
     } else {
       dayStrip.style.display = "none";
+      dayStripLabel.style.display = "none";
     }
 
     overlay.classList.add("open");
@@ -519,6 +530,7 @@
   }
 
   const dayStrip = document.getElementById("dayStrip");
+  const dayStripLabel = document.getElementById("dayStripLabel");
 
   function addDays(dateStr, n) {
     const date = new Date(dateStr + "T00:00:00");
