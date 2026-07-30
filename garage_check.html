@@ -400,7 +400,7 @@
     return `${dayFull} ${d}/${m}/${y}`;
   }
 
-  function showModal(kind, icon, title, detail, dateStr) {
+  function showModal(kind, icon, title, detail, dateStr, person) {
     modal.className = "modal " + kind;
     modalIcon.textContent = icon;
     modalTitle.textContent = title;
@@ -431,6 +431,55 @@
     }
   }
 
+  function computeOutcome(dateStr, person) {
+    const date = new Date(dateStr + "T00:00:00");
+    const dow = date.getDay(); // 0=Sun..6=Sat
+
+    if (dow === 0 || dow === 6) {
+      const weekendFull = dow === 0 ? "domenica" : "sabato";
+      return {
+        kind: "weekend", icon: "🌊", title: "VATTINNE A MARE!",
+        detail: `Ma l'hai controllato bene il calendario? La data selezionata è ${weekendFull}, altro che garage: rilassati!`
+      };
+    }
+
+    if (dateStr < DATA.start || dateStr > DATA.end) {
+      return {
+        kind: "neutral", icon: "🚧", title: "Nessun dato",
+        detail: "La data selezionata è fuori dal periodo del piano (04/08–30/09/2026)."
+      };
+    }
+
+    const dayCode = DAY_IT[dow];
+    const dayFull = DAY_FULL_IT[dow];
+
+    if (person.smart.includes(dayCode)) {
+      return {
+        kind: "smart", icon: "🛌", title: "STATT A CAST!",
+        detail: `${person.nome}, ${dayFull} è il tuo giorno di smart working. Resta a casa!`
+      };
+    }
+
+    const access = person.access[dateStr];
+    if (access === "SI") {
+      if (dayCode === "VEN") {
+        return {
+          kind: "race", icon: "🏁", title: "FUSCE!!",
+          detail: `${person.nome}, ${dayFull} l'accesso è libero ma i posti sono limitati: chi primo arriva....\nArriva presto o parcheggi fuori!`
+        };
+      }
+      return {
+        kind: "si", icon: "👍", title: "TRASE!",
+        detail: `${person.nome}, ${dayFull} hai accesso al garage. Verifica che non ci sia Consiglio e buona giornata!`
+      };
+    }
+
+    return {
+      kind: "no", icon: "🖐️", title: "DAFFÒRE!",
+      detail: `${person.nome}, ${dayFull} non è il tuo turno in garage. Riprova un'altra volta!`
+    };
+  }
+
   document.getElementById("verifyBtn").addEventListener("click", () => {
     const dateStr = giornoInput.value;
     const personId = select.value;
@@ -445,62 +494,8 @@
     }
 
     const person = DATA.people.find(p => String(p.id) === String(personId));
-    const date = new Date(dateStr + "T00:00:00");
-    const dow = date.getDay(); // 0=Sun..6=Sat
-
-    if (dow === 0 || dow === 6) {
-      const weekendFull = dow === 0 ? "domenica" : "sabato";
-      showModal(
-        "weekend", "🌊", "VATTINNE A MARE!",
-        `Ma l'hai controllato bene il calendario? La data selezionata è ${weekendFull}, altro che garage: rilassati!`,
-        dateStr
-      );
-      return;
-    }
-
-    if (dateStr < DATA.start || dateStr > DATA.end) {
-      showModal(
-        "neutral", "🚧", "Nessun dato",
-        "La data selezionata è fuori dal periodo del piano (04/08–30/09/2026).",
-        dateStr
-      );
-      return;
-    }
-
-    const dayCode = DAY_IT[dow];
-    const dayFull = DAY_FULL_IT[dow];
-
-    if (person.smart.includes(dayCode)) {
-      showModal(
-        "smart", "🛌", "STATT A CAST!",
-        `${person.nome}, ${dayFull} è il tuo giorno di smart working. Resta a casa!`,
-        dateStr
-      );
-      return;
-    }
-
-    const access = person.access[dateStr];
-    if (access === "SI") {
-      if (dayCode === "VEN") {
-        showModal(
-          "race", "🏁", "FUSCE!!",
-          `${person.nome}, ${dayFull} l'accesso è libero ma i posti sono limitati: chi primo arriva....\nArriva presto o parcheggi fuori!`,
-          dateStr
-        );
-      } else {
-        showModal(
-          "si", "👍", "TRASE!",
-          `${person.nome}, ${dayFull} hai accesso al garage. Verifica che non ci sia Consiglio e buona giornata!`,
-          dateStr
-        );
-      }
-    } else {
-      showModal(
-        "no", "🖐️", "DAFFÒRE!",
-        `${person.nome}, ${dayFull} non è il tuo turno in garage. Riprova un'altra volta!`,
-        dateStr
-      );
-    }
+    const outcome = computeOutcome(dateStr, person);
+    showModal(outcome.kind, outcome.icon, outcome.title, outcome.detail, dateStr, person);
   });
 
   if ("serviceWorker" in navigator) {
