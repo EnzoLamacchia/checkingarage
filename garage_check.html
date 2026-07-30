@@ -438,6 +438,13 @@
     modalDate.textContent = formatDayLabel(dateStr);
     modalDetail.textContent = detail;
     raceBar.style.display = kind === "race" ? "block" : "none";
+
+    if (dateStr && person) {
+      renderStrip(dateStr, person);
+    } else {
+      dayStrip.style.display = "none";
+    }
+
     overlay.classList.add("open");
   }
   function closeModal() {
@@ -509,6 +516,38 @@
       kind: "no", icon: "🖐️", title: "DAFFÒRE!",
       detail: `${person.nome}, ${dayFull} non è il tuo turno in garage. Riprova un'altra volta!`
     };
+  }
+
+  const dayStrip = document.getElementById("dayStrip");
+
+  function addDays(dateStr, n) {
+    const date = new Date(dateStr + "T00:00:00");
+    date.setDate(date.getDate() + n);
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  }
+
+  function renderStrip(dateStr, person) {
+    dayStrip.innerHTML = "";
+    for (let i = 1; i <= 5; i++) {
+      const chipDate = addDays(dateStr, i);
+      const outcome = computeOutcome(chipDate, person);
+      const dayNum = String(parseInt(chipDate.split("-")[2], 10));
+
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "day-chip " + outcome.kind;
+      chip.textContent = dayNum;
+      chip.addEventListener("click", () => {
+        giornoInput.value = chipDate;
+        updateDaySummary();
+        showModal(outcome.kind, outcome.icon, outcome.title, outcome.detail, chipDate, person);
+      });
+      dayStrip.appendChild(chip);
+    }
+    dayStrip.style.display = "grid";
   }
 
   document.getElementById("verifyBtn").addEventListener("click", () => {
