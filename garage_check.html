@@ -310,9 +310,39 @@
   }
   .modal .close-btn:active { background: rgba(255,255,255,0.32); }
 
+  .modal .day-strip {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin-top: 20px;
+  }
+  .modal .day-chip {
+    aspect-ratio: 1 / 1;
+    border-radius: 13px;
+    border: 1px solid rgba(255,255,255,0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #fff;
+    cursor: pointer;
+    user-select: none;
+    background: none;
+    padding: 0;
+    font-family: inherit;
+  }
+  .modal .day-chip.si { background: linear-gradient(160deg, #2fbf6b, #1f9d55); }
+  .modal .day-chip.no { background: linear-gradient(160deg, #ff2800, #a30000); }
+  .modal .day-chip.smart { background: linear-gradient(160deg, #8a6bff, #6a4cff); }
+  .modal .day-chip.race { background: linear-gradient(160deg, #ffb020, #ff7a1a); }
+  .modal .day-chip.weekend { background: linear-gradient(160deg, #6ec6e0, #3f96b8); }
+  .modal .day-chip.neutral { background: linear-gradient(160deg, #7c8794, #5a636e); }
+
   @media (max-width: 380px) {
     .modal .icon { font-size: 4.2rem; }
     .modal .title { font-size: 1.7rem; }
+    .modal .day-strip { gap: 6px; }
   }
 </style>
 </head>
@@ -349,6 +379,7 @@
       <div class="race-bar" id="raceBar" style="display:none;"></div>
       <div class="detail" id="modalDetail"></div>
       <button class="close-btn" id="closeBtn">Chiudi</button>
+      <div class="day-strip" id="dayStrip" style="display:none;"></div>
     </div>
   </div>
 
