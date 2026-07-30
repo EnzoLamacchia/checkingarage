@@ -310,9 +310,39 @@
   }
   .modal .close-btn:active { background: rgba(255,255,255,0.32); }
 
+  .modal .day-strip {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin-top: 20px;
+  }
+  .modal .day-chip {
+    aspect-ratio: 1 / 1;
+    border-radius: 13px;
+    border: 1px solid rgba(255,255,255,0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #fff;
+    cursor: pointer;
+    user-select: none;
+    background: none;
+    padding: 0;
+    font-family: inherit;
+  }
+  .modal .day-chip.si { background: linear-gradient(160deg, #2fbf6b, #1f9d55); }
+  .modal .day-chip.no { background: linear-gradient(160deg, #ff2800, #a30000); }
+  .modal .day-chip.smart { background: linear-gradient(160deg, #8a6bff, #6a4cff); }
+  .modal .day-chip.race { background: linear-gradient(160deg, #ffb020, #ff7a1a); }
+  .modal .day-chip.weekend { background: linear-gradient(160deg, #6ec6e0, #3f96b8); }
+  .modal .day-chip.neutral { background: linear-gradient(160deg, #7c8794, #5a636e); }
+
   @media (max-width: 380px) {
     .modal .icon { font-size: 4.2rem; }
     .modal .title { font-size: 1.7rem; }
+    .modal .day-strip { gap: 6px; }
   }
 </style>
 </head>
@@ -349,6 +379,7 @@
       <div class="race-bar" id="raceBar" style="display:none;"></div>
       <div class="detail" id="modalDetail"></div>
       <button class="close-btn" id="closeBtn">Chiudi</button>
+      <div class="day-strip" id="dayStrip" style="display:none;"></div>
     </div>
   </div>
 
@@ -400,13 +431,20 @@
     return `${dayFull} ${d}/${m}/${y}`;
   }
 
-  function showModal(kind, icon, title, detail, dateStr) {
+  function showModal(kind, icon, title, detail, dateStr, person) {
     modal.className = "modal " + kind;
     modalIcon.textContent = icon;
     modalTitle.textContent = title;
     modalDate.textContent = formatDayLabel(dateStr);
     modalDetail.textContent = detail;
     raceBar.style.display = kind === "race" ? "block" : "none";
+
+    if (dateStr && person) {
+      renderStrip(dateStr, person);
+    } else {
+      dayStrip.style.display = "none";
+    }
+
     overlay.classList.add("open");
   }
   function closeModal() {
@@ -431,6 +469,88 @@
     }
   }
 
+  function computeOutcome(dateStr, person) {
+    const date = new Date(dateStr + "T00:00:00");
+    const dow = date.getDay(); // 0=Sun..6=Sat
+
+    if (dateStr < DATA.start || dateStr > DATA.end) {
+      return {
+        kind: "neutral", icon: "🚧", title: "Nessun dato",
+        detail: "La data selezionata è fuori dal periodo del piano (04/08–30/09/2026)."
+      };
+    }
+
+    if (dow === 0 || dow === 6) {
+      const weekendFull = dow === 0 ? "domenica" : "sabato";
+      return {
+        kind: "weekend", icon: "🌊", title: "VATTINNE A MARE!",
+        detail: `Ma l'hai controllato bene il calendario? La data selezionata è ${weekendFull}, altro che garage: rilassati!`
+      };
+    }
+
+    const dayCode = DAY_IT[dow];
+    const dayFull = DAY_FULL_IT[dow];
+
+    if (person.smart.includes(dayCode)) {
+      return {
+        kind: "smart", icon: "🛌", title: "STATT A CAST!",
+        detail: `${person.nome}, ${dayFull} è il tuo giorno di smart working. Resta a casa!`
+      };
+    }
+
+    const access = person.access[dateStr];
+    if (access === "SI") {
+      if (dayCode === "VEN") {
+        return {
+          kind: "race", icon: "🏁", title: "FUSCE!!",
+          detail: `${person.nome}, ${dayFull} l'accesso è libero ma i posti sono limitati: chi primo arriva....`
+        };
+      }
+      return {
+        kind: "si", icon: "👍", title: "TRASE!",
+        detail: `${person.nome}, ${dayFull} hai accesso al garage. Verifica che non ci sia Consiglio e buona giornata!`
+      };
+    }
+
+    return {
+      kind: "no", icon: "🖐️", title: "DAFFÒRE!",
+      detail: `${person.nome}, ${dayFull} non è il tuo turno in garage. Riprova un'altra volta!`
+    };
+  }
+
+  const dayStrip = document.getElementById("dayStrip");
+
+  function addDays(dateStr, n) {
+    const date = new Date(dateStr + "T00:00:00");
+    date.setDate(date.getDate() + n);
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  }
+
+  function renderStrip(dateStr, person) {
+    dayStrip.innerHTML = "";
+    for (let i = 1; i <= 5; i++) {
+      const chipDate = addDays(dateStr, i);
+      const outcome = computeOutcome(chipDate, person);
+      const dayNum = String(parseInt(chipDate.split("-")[2], 10));
+
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "day-chip " + outcome.kind;
+      chip.textContent = dayNum;
+      chip.addEventListener("click", () => {
+        giornoInput.value = chipDate;
+        updateDaySummary();
+        const clickedOutcome = computeOutcome(chipDate, person);
+        showModal(clickedOutcome.kind, clickedOutcome.icon, clickedOutcome.title, clickedOutcome.detail, chipDate, person);
+      });
+      dayStrip.appendChild(chip);
+    }
+    dayStrip.style.display = "grid";
+  }
+
   document.getElementById("verifyBtn").addEventListener("click", () => {
     const dateStr = giornoInput.value;
     const personId = select.value;
@@ -445,62 +565,8 @@
     }
 
     const person = DATA.people.find(p => String(p.id) === String(personId));
-    const date = new Date(dateStr + "T00:00:00");
-    const dow = date.getDay(); // 0=Sun..6=Sat
-
-    if (dow === 0 || dow === 6) {
-      const weekendFull = dow === 0 ? "domenica" : "sabato";
-      showModal(
-        "weekend", "🌊", "VATTINNE A MARE!",
-        `Ma l'hai controllato bene il calendario? La data selezionata è ${weekendFull}, altro che garage: rilassati!`,
-        dateStr
-      );
-      return;
-    }
-
-    if (dateStr < DATA.start || dateStr > DATA.end) {
-      showModal(
-        "neutral", "🚧", "Nessun dato",
-        "La data selezionata è fuori dal periodo del piano (04/08–30/09/2026).",
-        dateStr
-      );
-      return;
-    }
-
-    const dayCode = DAY_IT[dow];
-    const dayFull = DAY_FULL_IT[dow];
-
-    if (person.smart.includes(dayCode)) {
-      showModal(
-        "smart", "🛌", "STATT A CAST!",
-        `${person.nome}, ${dayFull} è il tuo giorno di smart working. Resta a casa!`,
-        dateStr
-      );
-      return;
-    }
-
-    const access = person.access[dateStr];
-    if (access === "SI") {
-      if (dayCode === "VEN") {
-        showModal(
-          "race", "🏁", "FUSCE!!",
-          `${person.nome}, ${dayFull} l'accesso è libero ma i posti sono limitati: chi primo arriva....`,
-          dateStr
-        );
-      } else {
-        showModal(
-          "si", "👍", "TRASE!",
-          `${person.nome}, ${dayFull} hai accesso al garage. Verifica che non ci sia Consiglio e buona giornata!`,
-          dateStr
-        );
-      }
-    } else {
-      showModal(
-        "no", "🖐️", "DAFFÒRE!",
-        `${person.nome}, ${dayFull} non è il tuo turno in garage. Riprova un'altra volta!`,
-        dateStr
-      );
-    }
+    const outcome = computeOutcome(dateStr, person);
+    showModal(outcome.kind, outcome.icon, outcome.title, outcome.detail, dateStr, person);
   });
 
   if ("serviceWorker" in navigator) {
