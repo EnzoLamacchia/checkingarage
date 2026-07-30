@@ -473,18 +473,18 @@
     const date = new Date(dateStr + "T00:00:00");
     const dow = date.getDay(); // 0=Sun..6=Sat
 
+    if (dateStr < DATA.start || dateStr > DATA.end) {
+      return {
+        kind: "neutral", icon: "🚧", title: "Nessun dato",
+        detail: "La data selezionata è fuori dal periodo del piano (04/08–30/09/2026)."
+      };
+    }
+
     if (dow === 0 || dow === 6) {
       const weekendFull = dow === 0 ? "domenica" : "sabato";
       return {
         kind: "weekend", icon: "🌊", title: "VATTINNE A MARE!",
         detail: `Ma l'hai controllato bene il calendario? La data selezionata è ${weekendFull}, altro che garage: rilassati!`
-      };
-    }
-
-    if (dateStr < DATA.start || dateStr > DATA.end) {
-      return {
-        kind: "neutral", icon: "🚧", title: "Nessun dato",
-        detail: "La data selezionata è fuori dal periodo del piano (04/08–30/09/2026)."
       };
     }
 
@@ -543,7 +543,8 @@
       chip.addEventListener("click", () => {
         giornoInput.value = chipDate;
         updateDaySummary();
-        showModal(outcome.kind, outcome.icon, outcome.title, outcome.detail, chipDate, person);
+        const clickedOutcome = computeOutcome(chipDate, person);
+        showModal(clickedOutcome.kind, clickedOutcome.icon, clickedOutcome.title, clickedOutcome.detail, chipDate, person);
       });
       dayStrip.appendChild(chip);
     }
