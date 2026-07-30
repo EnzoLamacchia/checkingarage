@@ -1,4 +1,4 @@
-const CACHE_NAME = "garage-check-v1";
+const CACHE_NAME = "garage-check-v2";
 const ASSETS = [
   "garage_check.html",
   "manifest.json",
